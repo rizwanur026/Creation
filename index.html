@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14101a; --bg2:#1c1626; --panel:#221b2e; --line:#3a3049;
+  --ink:#f3ecdf; --mute:#a99fb8; --gold:#d6b16a; --gold2:#b88f45; --danger:#e0707f; --ok:#7fc8a0;
+  --serif:'Fraunces',Georgia,serif; --sans:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;min-height:100vh;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.hidden{display:none!important}
+
+/* ---------- public site ---------- */
+.nav{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+  padding:18px clamp(18px,5vw,56px);background:linear-gradient(var(--bg),rgba(20,16,26,.7));backdrop-filter:blur(10px)}
+.brand{font-family:var(--serif);font-size:1.5rem;font-weight:500;letter-spacing:.01em}
+.nav a.admin-link{font-size:.85rem;color:var(--mute);border:1px solid var(--line);padding:8px 16px;border-radius:999px;transition:.25s}
+.nav a.admin-link:hover{color:var(--gold);border-color:var(--gold)}
+.hero{padding:clamp(48px,10vw,120px) clamp(18px,5vw,56px) 40px;max-width:1200px;margin:0 auto}
+.hero h1{font-family:var(--serif);font-weight:300;font-size:clamp(2.6rem,8vw,6rem);line-height:1.02;letter-spacing:-.02em;max-width:14ch}
+.hero h1 em{color:var(--gold)}
+.hero p{margin-top:22px;color:var(--mute);max-width:46ch;font-size:1.05rem}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;max-width:1200px;margin:24px auto 0;padding:0 clamp(18px,5vw,56px)}
+.chip{border:1px solid var(--line);background:transparent;padding:8px 16px;border-radius:999px;cursor:pointer;color:var(--mute);font-size:.88rem;transition:.2s}
+.chip:hover{color:var(--ink)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#241a08;font-weight:600}
+.search{margin-left:auto;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:8px 16px;min-width:180px}
+.grid{columns:3 280px;column-gap:18px;max-width:1200px;margin:32px auto 80px;padding:0 clamp(18px,5vw,56px)}
+.card{break-inside:avoid;margin-bottom:18px;position:relative;border-radius:6px;overflow:hidden;cursor:zoom-in;background:var(--panel)}
+.card img{display:block;width:100%;height:auto;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.card:hover img{transform:scale(1.04)}
+.card .cap{position:absolute;inset:auto 0 0 0;padding:44px 16px 14px;background:linear-gradient(transparent,rgba(10,6,16,.88));
+  opacity:0;transform:translateY(8px);transition:.35s}
+.card:hover .cap,.card:focus-visible .cap{opacity:1;transform:none}
+.cap h3{font-family:var(--serif);font-weight:500;font-size:1.15rem}
+.cap span{font-size:.8rem;color:var(--gold)}
+@media(hover:none){.card .cap{opacity:1;transform:none}}
+.empty{text-align:center;color:var(--mute);padding:80px 20px;max-width:1200px;margin:0 auto}
+.empty a{color:var(--gold);border-bottom:1px solid var(--gold)}
+footer{border-top:1px solid var(--line);padding:30px;text-align:center;color:var(--mute);font-size:.85rem}
+
+.lb{position:fixed;inset:0;z-index:50;background:rgba(10,6,16,.96);display:flex;align-items:center;justify-content:center;
+  padding:24px;flex-direction:column;gap:16px}
+.lb img{max-width:100%;max-height:76vh;border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lb .meta{text-align:center;max-width:60ch}
+.lb h2{font-family:var(--serif);font-weight:400;font-size:1.6rem}
+.lb p{color:var(--mute);font-size:.95rem}
+.lb .x,.lb .nv{position:absolute;background:rgba(255,255,255,.08);border:0;color:var(--ink);width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:1.3rem}
+.lb .x{top:max(18px,env(safe-area-inset-top));right:18px}
+.lb .prev{left:14px;top:50%}.lb .next{right:14px;top:50%}
+
+/* ---------- admin ---------- */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:34px;width:min(420px,100%)}
+.box h2{font-family:var(--serif);font-weight:500;font-size:1.8rem;margin-bottom:6px}
+.box p.sub{color:var(--mute);font-size:.9rem;margin-bottom:22px}
+label{display:block;font-size:.82rem;color:var(--mute);margin:14px 0 6px}
+input[type=text],input[type=password],select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+textarea{resize:vertical;min-height:80px}
+.btn{background:var(--gold);color:#241a08;border:0;border-radius:8px;padding:11px 20px;font-weight:600;cursor:pointer;transition:.2s}
+.btn:hover{background:#e6c47f}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn.danger:hover{background:var(--danger);color:#26070c}
+.btn.sm{padding:7px 12px;font-size:.82rem}
+.err{color:var(--danger);font-size:.85rem;margin-top:10px;min-height:1.2em}
+
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.side{background:var(--bg2);border-right:1px solid var(--line);padding:26px 18px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.side .brand{margin-bottom:22px}
+.side button.t{background:none;border:0;text-align:left;padding:11px 14px;border-radius:8px;color:var(--mute);cursor:pointer}
+.side button.t:hover{color:var(--ink)}
+.side button.t.on{background:var(--panel);color:var(--gold)}
+.side .sp{flex:1}
+.main{padding:clamp(18px,3vw,40px);min-width:0}
+.main h1{font-family:var(--serif);font-weight:400;font-size:2rem;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.stat b{font-family:var(--serif);font-size:2.1rem;font-weight:400;display:block;color:var(--gold)}
+.stat span{color:var(--mute);font-size:.85rem}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:34px;text-align:center;color:var(--mute);cursor:pointer;transition:.2s;margin-bottom:26px}
+.drop:hover,.drop.over{border-color:var(--gold);color:var(--gold);background:rgba(214,177,106,.05)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.bar .search{margin-left:0;border-radius:8px}
+.list{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:auto 84px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.row img{width:84px;height:84px;object-fit:cover;border-radius:6px;display:block}
+.row h4{font-family:var(--serif);font-weight:500;font-size:1.05rem}
+.row small{color:var(--mute)}
+.pill{display:inline-block;font-size:.72rem;border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin-right:6px;color:var(--mute)}
+.pill.live{color:var(--ok);border-color:var(--ok)}.pill.hid{color:var(--danger);border-color:var(--danger)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(10,6,16,.8);display:grid;place-items:center;padding:20px;overflow:auto}
+.modal .box{width:min(560px,100%)}
+.modal img{width:100%;max-height:240px;object-fit:contain;background:var(--bg2);border-radius:8px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#1a1322;padding:11px 20px;border-radius:999px;font-weight:600;font-size:.9rem;z-index:99}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px}
+  .side .brand{margin:0 auto 0 0}.side .sp{display:none}
+  .row{grid-template-columns:auto 64px 1fr}.row img{width:64px;height:64px}.row .acts{grid-column:1/-1;justify-content:flex-start}
+  .cols2{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ PUBLIC SITE ============ -->
+<div id="site">
+  <header class="nav">
+    <a class="brand" href="#/" id="brandName">Atelier</a>
+    <a class="admin-link" href="#/admin">Admin</a>
+  </header>
+  <section class="hero">
+    <h1 id="heroTitle">Selected <em>work</em>, quietly shown.</h1>
+    <p id="heroSub">A curated collection of images. Browse by collection or search by title.</p>
+  </section>
+  <div class="filters" id="filters"></div>
+  <main class="grid" id="grid" aria-live="polite"></main>
+  <div class="empty hidden" id="empty">Nothing here yet. Add images from the <a href="#/admin">admin panel</a>.</div>
+  <footer id="footerText">© Atelier</footer>
+</div>
+
+<!-- ============ ADMIN ============ -->
+<div id="admin" class="hidden">
+  <div class="login hidden" id="loginView">
+    <form class="box" id="loginForm">
+      <h2>Admin sign in</h2>
+      <p class="sub">Enter your password to manage the gallery.</p>
+      <label for="pw">Password</label>
+      <input id="pw" type="password" autocomplete="current-password" required>
+      <div class="err" id="loginErr"></div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn" type="submit">Sign in</button>
+        <a class="btn ghost" href="#/">View site</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="shell hidden" id="panel">
+    <aside class="side">
+      <div class="brand">Atelier</div>
+      <button class="t on" data-tab="dash">Dashboard</button>
+      <button class="t" data-tab="media">Images</button>
+      <button class="t" data-tab="settings">Settings</button>
+      <div class="sp"></div>
+      <a class="btn ghost sm" href="#/" style="text-align:center">View site</a>
+      <button class="btn ghost sm" id="logout">Sign out</button>
+    </aside>
+    <section class="main">
+      <div id="tab-dash">
+        <h1>Dashboard</h1>
+        <div class="stats" id="stats"></div>
+        <div class="drop" id="dropA" tabindex="0" role="button">Drop images here or tap to upload</div>
+      </div>
+
+      <div id="tab-media" class="hidden">
+        <h1>Images</h1>
+        <div class="drop" id="dropB" tabindex="0" role="button">Drop images here or tap to upload</div>
+        <div class="bar">
+          <input class="search" id="aSearch" type="text" placeholder="Search images">
+          <select id="aCat" style="width:auto"></select>
+          <button class="btn ghost sm" id="selAll">Select all</button>
+          <button class="btn danger sm" id="bulkDel">Delete selected</button>
+        </div>
+        <div class="list" id="aList"></div>
+      </div>
+
+      <div id="tab-settings" class="hidden">
+        <h1>Settings</h1>
+        <div class="box" style="width:min(560px,100%)">
+          <label>Site name</label><input type="text" id="sName">
+          <label>Headline</label><input type="text" id="sHero">
+          <label>Subtitle</label><input type="text" id="sSub">
+          <label>Footer text</label><input type="text" id="sFoot">
+          <label>New password (leave blank to keep current)</label><input type="password" id="sPw" autocomplete="new-password">
+          <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+            <button class="btn" id="saveSet">Save settings</button>
+            <button class="btn ghost" id="exp">Export backup</button>
+            <button class="btn ghost" id="imp">Import backup</button>
+            <input type="file" id="impFile" accept="application/json" class="hidden">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<input type="file" id="fileIn" accept="image/*" multiple class="hidden">
+
+<script>
+/* ===== Storage: IndexedDB (images) + localStorage (settings) ===== */
+const DB='atelier-gallery',STORE='images';
+let db;
+const openDB=()=>new Promise((res,rej)=>{
+  const r=indexedDB.open(DB,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:'id'});
+  r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error);
+});
+const tx=(m)=>db.transaction(STORE,m).objectStore(STORE);
+const reqP=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const dbAll=async()=>(await reqP(tx('readonly').getAll())).sort((a,b)=>b.created-a.created);
+const dbPut=o=>reqP(tx('readwrite').put(o));
+const dbDel=id=>reqP(tx('readwrite').delete(id));
+
+const defaults={name:'Atelier',hero:'Selected work, quietly shown.',sub:'A curated collection of images. Browse by collection or search by title.',foot:'© Atelier',pw:'admin123'};
+const getSet=()=>{try{return {...defaults,...JSON.parse(localStorage.getItem('atelier-settings')||'{}')}}catch(e){return {...defaults}}};
+const setSet=s=>{try{localStorage.setItem('atelier-settings',JSON.stringify(s))}catch(e){}};
+
+/* ===== helpers ===== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function resize(file,max=1800,q=.86){return new Promise((res,rej)=>{
+  const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',q))};
+  img.onerror=()=>rej(new Error('bad image'));img.src=u})}
+
+let items=[],filterCat='All',query='',lbList=[],lbIdx=0;
+
+/* ===== public site ===== */
+function applySettings(){
+  const s=getSet();
+  $('#brandName').textContent=s.name;document.title=s.name+' Gallery';
+  $('#heroTitle').textContent=s.hero;$('#heroSub').textContent=s.sub;$('#footerText').textContent=s.foot;
+}
+function renderSite(){
+  const live=items.filter(i=>i.visible!==false);
+  const cats=['All',...new Set(live.map(i=>i.category).filter(Boolean))];
+  if(!cats.includes(filterCat))filterCat='All';
+  $('#filters').innerHTML=cats.map(c=>`<button class="chip ${c===filterCat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')+
+    `<input class="search" id="pSearch" type="text" placeholder="Search" value="${esc(query)}" aria-label="Search">`;
+  $$('#filters .chip').forEach(b=>b.onclick=()=>{filterCat=b.dataset.c;renderSite()});
+  $('#pSearch').oninput=e=>{query=e.target.value;renderGrid()};
+  renderGrid();
+}
+function renderGrid(){
+  const live=items.filter(i=>i.visible!==false);
+  const q=query.toLowerCase();
+  lbList=live.filter(i=>(filterCat==='All'||i.category===filterCat)&&(!q||(i.title+' '+(i.tags||'')+' '+(i.desc||'')).toLowerCase().includes(q)));
+  $('#grid').innerHTML=lbList.map((i,n)=>`<figure class="card" tabindex="0" data-n="${n}"><img loading="lazy" src="${i.data}" alt="${esc(i.title)}"><figcaption class="cap"><h3>${esc(i.title)}</h3><span>${esc(i.category||'')}</span></figcaption></figure>`).join('');
+  $('#empty').classList.toggle('hidden',live.length>0);
+  $$('#grid .card').forEach(c=>{c.onclick=()=>openLB(+c.dataset.n);c.onkeydown=e=>{if(e.key==='Enter')openLB(+c.dataset.n)}});
+}
+function openLB(n){
+  lbIdx=n;const i=lbList[n];if(!i)return;
+  let lb=$('.lb');if(!lb){lb=document.createElement('div');lb.className='lb';document.body.appendChild(lb)}
+  lb.innerHTML=`<button class="x" aria-label="Close">✕</button><button class="nv prev" aria-label="Previous">‹</button><button class="nv next" aria-label="Next">›</button>
+  <img src="${i.data}" alt="${esc(i.title)}"><div class="meta"><h2>${esc(i.title)}</h2><p>${esc(i.desc||'')}</p></div>`;
+  lb.querySelector('.x').onclick=closeLB;
+  lb.querySelector('.prev').onclick=()=>openLB((lbIdx-1+lbList.length)%lbList.length);
+  lb.querySelector('.next').onclick=()=>openLB((lbIdx+1)%lbList.length);
+  lb.onclick=e=>{if(e.target===lb)closeLB()};
+}
+const closeLB=()=>{const l=$('.lb');if(l)l.remove()};
+document.addEventListener('keydown',e=>{
+  if(!$('.lb'))return;
+  if(e.key==='Escape')closeLB();
+  if(e.key==='ArrowLeft')openLB((lbIdx-1+lbList.length)%lbList.length);
+  if(e.key==='ArrowRight')openLB((lbIdx+1)%lbList.length);
+});
+
+/* ===== admin ===== */
+const authed=()=>sessionStorage.getItem('atelier-auth')==='1';
+function showTab(t){
+  $$('.side .t').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  ['dash','media','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
+  if(t==='settings'){const s=getSet();$('#sName').value=s.name;$('#sHero').value=s.hero;$('#sSub').value=s.sub;$('#sFoot').value=s.foot;$('#sPw').value=''}
+}
+$$('.side .t').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+function renderAdmin(){
+  const total=items.length,live=items.filter(i=>i.visible!==false).length,cats=new Set(items.map(i=>i.category).filter(Boolean)).size;
+  const kb=Math.round(items.reduce((a,i)=>a+(i.data?.length||0),0)*.75/1024);
+  $('#stats').innerHTML=[[total,'Total images'],[live,'Published'],[total-live,'Hidden'],[cats,'Collections'],[kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB','Stored']]
+    .map(([a,b])=>`<div class="stat"><b>${a}</b><span>${b}</span></div>`).join('');
+  const cur=$('#aCat').value||'All';
+  $('#aCat').innerHTML=['All',...new Set(items.map(i=>i.category).filter(Boolean))].map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+  const q=$('#aSearch').value.toLowerCase(),c=$('#aCat').value;
+  const list=items.filter(i=>(c==='All'||i.category===c)&&(!q||(i.title+' '+(i.tags||'')).toLowerCase().includes(q)));
+  $('#aList').innerHTML=list.length?list.map(i=>`<div class="row" data-id="${i.id}">
+    <input type="checkbox" class="sel" aria-label="Select">
+    <img src="${i.data}" alt="">
+    <div><h4>${esc(i.title)}</h4><small>${esc(i.category||'Uncategorised')}${i.tags?' · '+esc(i.tags):''}</small><div style="margin-top:6px"><span class="pill ${i.visible!==false?'live':'hid'}">${i.visible!==false?'Published':'Hidden'}</span></div></div>
+    <div class="acts"><button class="btn ghost sm" data-a="edit">Edit</button><button class="btn ghost sm" data-a="vis">${i.visible!==false?'Hide':'Publish'}</button><button class="btn danger sm" data-a="del">Delete</button></div></div>`).join('')
+    :'<div class="empty">No images yet. Upload some above.</div>';
+}
+$('#aSearch').oninput=renderAdmin;$('#aCat').onchange=renderAdmin;
+
+$('#aList').onclick=async e=>{
+  const b=e.target.closest('button[data-a]');if(!b)return;
+  const id=b.closest('.row').dataset.id,it=items.find(x=>x.id===id);
+  if(b.dataset.a==='edit')return editModal(it);
+  if(b.dataset.a==='vis'){it.visible=it.visible===false;await dbPut(it);await refresh();toast(it.visible?'Published':'Hidden')}
+  if(b.dataset.a==='del'){if(confirm('Delete "'+it.title+'"? This cannot be undone.')){await dbDel(id);await refresh();toast('Deleted')}}
+};
+$('#selAll').onclick=()=>{const bx=$$('.sel');const all=bx.every(x=>x.checked);bx.forEach(x=>x.checked=!all)};
+$('#bulkDel').onclick=async()=>{
+  const ids=$$('.sel:checked').map(x=>x.closest('.row').dataset.id);
+  if(!ids.length)return toast('Select images first');
+  if(!confirm('Delete '+ids.length+' image(s)?'))return;
+  for(const id of ids)await dbDel(id);await refresh();toast('Deleted '+ids.length);
+};
+
+function editModal(it){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box"><h2>Edit image</h2><img src="${it.data}" alt="" style="margin:14px 0">
+  <label>Title</label><input type="text" id="eT" value="${esc(it.title)}">
+  <div class="cols2"><div><label>Collection</label><input type="text" id="eC" value="${esc(it.category||'')}" list="cl"><datalist id="cl">${[...new Set(items.map(i=>i.category).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+  <div><label>Tags (comma separated)</label><input type="text" id="eG" value="${esc(it.tags||'')}"></div></div>
+  <label>Description</label><textarea id="eD">${esc(it.desc||'')}</textarea>
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="eV" ${it.visible!==false?'checked':''}> Show on public site</label>
+  <label>Replace image (optional)</label><input type="file" id="eF" accept="image/*">
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn" id="eS">Save changes</button><button class="btn ghost" id="eX">Cancel</button></div></div>`;
+  document.body.appendChild(m);
+  $('#eX').onclick=()=>m.remove();
+  $('#eS').onclick=async()=>{
+    it.title=$('#eT').value.trim()||'Untitled';it.category=$('#eC').value.trim();it.tags=$('#eG').value.trim();
+    it.desc=$('#eD').value.trim();it.visible=$('#eV').checked;
+    const f=$('#eF').files[0];if(f){try{it.data=await resize(f)}catch(e){return toast('Could not read image')}}
+    await dbPut(it);m.remove();await refresh();toast('Saved');
+  };
+}
+
+async function handleFiles(files){
+  const list=[...files].filter(f=>f.type.startsWith('image/'));
+  if(!list.length)return toast('Choose image files');
+  let n=0;
+  for(const f of list){
+    try{const data=await resize(f);
+      await dbPut({id:uid(),title:f.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' '),desc:'',category:'',tags:'',visible:true,created:Date.now()+n++,data});
+    }catch(e){}
+  }
+  await refresh();toast('Uploaded '+n+' image'+(n===1?'':'s'));showTab('media');
+}
+$('#fileIn').onchange=e=>{handleFiles(e.target.files);e.target.value=''};
+['dropA','dropB'].forEach(id=>{
+  const d=$('#'+id);
+  d.onclick=()=>$('#fileIn').click();
+  d.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')$('#fileIn').click()};
+  d.ondragover=e=>{e.preventDefault();d.classList.add('over')};
+  d.ondragleave=()=>d.classList.remove('over');
+  d.ondrop=e=>{e.preventDefault();d.classList.remove('over');handleFiles(e.dataTransfer.files)};
+});
+
+$('#saveSet').onclick=()=>{
+  const s=getSet();
+  s.name=$('#sName').value.trim()||defaults.name;s.hero=$('#sHero').value.trim()||defaults.hero;
+  s.sub=$('#sSub').value.trim();s.foot=$('#sFoot').value.trim();
+  const p=$('#sPw').value;if(p){if(p.length<6)return toast('Password needs 6+ characters');s.pw=p}
+  setSet(s);applySettings();toast('Settings saved');
+};
+$('#exp').onclick=async()=>{
+  const blob=new Blob([JSON.stringify({settings:{...getSet(),pw:undefined},images:items})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gallery-backup.json';a.click();
+};
+$('#imp').onclick=()=>$('#impFile').click();
+$('#impFile').onchange=async e=>{
+  try{const j=JSON.parse(await e.target.files[0].text());
+    for(const i of j.images||[])await dbPut(i);
+    if(j.settings){const s=getSet();setSet({...s,...j.settings,pw:s.pw})}
+    applySettings();await refresh();toast('Backup imported');
+  }catch(err){toast('Invalid backup file')}
+  e.target.value='';
+};
+
+$('#loginForm').onsubmit=e=>{
+  e.preventDefault();
+  if($('#pw').value===getSet().pw){sessionStorage.setItem('atelier-auth','1');$('#pw').value='';$('#loginErr').textContent='';route()}
+  else $('#loginErr').textContent='Wrong password. Try again.';
+};
+$('#logout').onclick=()=>{sessionStorage.removeItem('atelier-auth');location.hash='#/'};
+
+/* ===== router ===== */
+async function refresh(){items=await dbAll();renderSite();renderAdmin()}
+function route(){
+  const isAdmin=location.hash.startsWith('#/admin');
+  $('#site').classList.toggle('hidden',isAdmin);
+  $('#admin').classList.toggle('hidden',!isAdmin);
+  if(isAdmin){
+    $('#loginView').classList.toggle('hidden',authed());
+    $('#panel').classList.toggle('hidden',!authed());
+  }
+  closeLB();
+}
+window.addEventListener('hashchange',route);
+(async()=>{await openDB();applySettings();await refresh();route()})();
+</script>
+</body>
+</html>
